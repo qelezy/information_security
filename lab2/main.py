@@ -1,7 +1,10 @@
 import sys
+import secrets
+import string
 from PySide6.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, QIODevice
+from des import des
 
 
 class MainWindow(QMainWindow):
@@ -31,10 +34,63 @@ class MainWindow(QMainWindow):
         self.ui.showResultBtn.clicked.connect(self.process_encryption)
         self.ui.loadFileBtn.clicked.connect(self.load_file)
         self.ui.saveFileBtn.clicked.connect(self.save_file)
+        self.ui.formKeyBtn.clicked.connect(self.generate_key)
         self.ui.encryptRadioBtn.setChecked(True)
     
+    def generate_key(self):
+        try:
+            chars = string.ascii_letters + string.digits
+            key_text = ''.join(secrets.choice(chars) for _ in range(8))
+            self.ui.keyText.setPlainText(key_text)
+        except Exception as e:
+            QMessageBox.critical(self, "Ошибка", f"Не удалось сгенерировать ключ:\n{str(e)}")
+    
+    def get_key_from_input(self) -> str:
+        key_text = self.ui.keyText.toPlainText().strip()
+        
+        if not key_text:
+            QMessageBox.warning(
+                self,
+                "Ключ не задан",
+                "Пожалуйста, введите ключ вручную или нажмите кнопку 'Сформировать ключ' для автоматической генерации."
+            )
+            return None
+        
+        try:
+            key_bytes = key_text.encode("utf-8")
+            if len(key_bytes) != 8:
+                raise ValueError(
+                    f"Ключ DES должен кодироваться в ровно 8 байт (64 бита), "
+                    f"сейчас {len(key_bytes)} байт.\n\n"
+                )
+            return key_text
+        except ValueError as e:
+            QMessageBox.warning(
+                self,
+                "Ошибка ключа",
+                f"Неверный формат ключа:\n{str(e)}"
+            )
+            return None
+    
     def process_encryption(self):
-        pass
+        input_text = self.ui.inputText.toPlainText()
+        
+        if not input_text:
+            QMessageBox.warning(self, "Предупреждение", "Введите исходный текст")
+            return
+        
+        key_text = self.get_key_from_input()
+        if key_text is None:
+            return
+        
+        is_encrypt = self.ui.encryptRadioBtn.isChecked()
+        mode = "encrypt" if is_encrypt else "decrypt"
+        
+        try:
+            result = des(input_text, key_text, mode)
+            self.ui.resultText.setPlainText(result)
+        except Exception as e:
+            QMessageBox.critical(self, "Ошибка", f"Ошибка при обработке данных:\n{str(e)}")
     
     def load_file(self):
         file_path, _ = QFileDialog.getOpenFileName(

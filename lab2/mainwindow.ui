@@ -40,35 +40,6 @@
        </layout>
       </item>
       <item>
-       <widget class="QComboBox" name="modeComboBox">
-        <item>
-         <property name="text">
-          <string>ECB</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>CBC</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>CFB</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>OFB</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>CTR</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Orientation::Horizontal</enum>
